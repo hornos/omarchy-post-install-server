@@ -12,11 +12,17 @@
 #   ./server-install.sh --dry-run    # show what would be done, change nothing
 #   ./server-install.sh --yes        # unattended confirmation
 #
+# Install from GitHub:
+#   curl -fsSL https://raw.githubusercontent.com/hornos/omarchy-post-install-server/main/install.sh | bash
+#
 # Tasks: Flea (+ default file manager), disktree-bin (+ software OpenGL
 # wrapper for older GPUs), Omarchy Control (+ menu integration), Tailscale,
 # Rufust, OpenShell and TMOG.
 
 set -euo pipefail
+
+version='1.0.0'
+repo_url='https://github.com/hornos/omarchy-post-install-server'
 
 dry_run=false
 assume_yes=false
@@ -26,7 +32,7 @@ step() { printf '\n==> %s\n' "$*"; }
 ok()   { printf '  %s\n' "$*"; }
 
 usage() {
-  cat <<'EOF'
+  cat <<EOF
 Usage: server-install.sh [OPTIONS]
 
 Install and configure the Omarchy server toolset.
@@ -35,11 +41,14 @@ Options:
   -n, --dry-run   Show current state and the commands that would run;
                   make no changes.
   -y, --yes       Skip the confirmation prompt (for unattended runs).
+  -v, --version   Print the version and exit.
   -h, --help      Show this help and exit.
 
 Privilege escalation uses pkexec (polkit dialog) when available, falling
 back to sudo, or no elevation at all when run as root. AUR packages are
 installed with yay as the invoking desktop user.
+
+Source: $repo_url
 EOF
 }
 
@@ -47,6 +56,7 @@ while (($#)); do
   case $1 in
     -n|--dry-run) dry_run=true ;;
     -y|--yes)     assume_yes=true ;;
+    -v|--version) printf 'server-install.sh %s\n' "$version"; exit 0 ;;
     -h|--help)    usage; exit 0 ;;
     *) printf 'error: unknown option: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
   esac
@@ -341,7 +351,7 @@ if [[ -n $effective_disktree ]] \
    && grep -aq 'LIBGL_ALWAYS_SOFTWARE=1' "$effective_disktree"; then gl_state=configured; else gl_state=missing; fi
 if [[ -n $systemctl_path ]] && "$systemctl_path" is-enabled --quiet tailscaled.service 2>/dev/null; then ts_state=enabled; else ts_state=disabled; fi
 
-printf 'Omarchy server post-install: install/configure toolset\n'
+printf 'Omarchy server post-install %s: install/configure toolset\n' "$version"
 printf 'Privilege helper: %s\n' "${priv[0]:-root (no elevation needed)}"
 printf '\nCurrent status:\n'
 printf '  flea:              %s\n' "$(pkg_status flea)"

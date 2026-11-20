@@ -1,21 +1,54 @@
 # Omarchy post-install toolkit
 
-Two idempotent shell scripts for preparing an Arch-based **Omarchy** install for
-server use: one installs and configures the server toolset, the other removes
-desktop-only applications. Both check current state before acting, support
-`--dry-run` and `--yes`, and are safe to re-run.
+A small toolkit of idempotent shell scripts for preparing an Arch-based
+**Omarchy** install for server use. The main scripts check current state before
+acting, support `--dry-run` and `--yes`, and are safe to re-run.
 
 | Script | Purpose |
 |--------|---------|
+| [`install.sh`](install.sh) | Bootstrap that installs the toolkit from GitHub with a one-liner. |
 | [`server-install.sh`](server-install.sh) | Install and configure the server toolset: Flea, Disktree, Omarchy Control, Tailscale, Rufust, OpenShell and TMOG. |
 | [`server-uninstall-packages.sh`](server-uninstall-packages.sh) | Remove desktop applications such as LibreOffice, GIMP, VLC and Discord. |
+
+## Install from GitHub
+
+Install both scripts into `~/.local/bin` with a single command:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hornos/omarchy-post-install-server/main/install.sh | bash
+```
+
+The bootstrap downloads the scripts over HTTPS, checks their bash syntax, and
+installs them executable. It does **not** run the server installer by default.
+Preview first, then apply:
+
+```sh
+~/.local/bin/server-install.sh --dry-run
+~/.local/bin/server-install.sh
+```
+
+To install and immediately run the installer in one step, pass `--run`. Extra
+arguments are forwarded to `server-install.sh`:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hornos/omarchy-post-install-server/main/install.sh | bash -s -- --run --dry-run
+curl -fsSL https://raw.githubusercontent.com/hornos/omarchy-post-install-server/main/install.sh | bash -s -- --run --yes
+```
+
+Change the destination with `OMARCHY_POST_INSTALL_DIR` (or `--dir` when running
+a local copy of `install.sh`):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hornos/omarchy-post-install-server/main/install.sh | OMARCHY_POST_INSTALL_DIR=~/bin bash
+```
 
 ## Requirements
 
 - An Arch-based Omarchy installation with `bash`, `pacman` and the `omarchy` CLI.
 - `pkexec` or `sudo` for privileged operations, or run the script as root.
 - `yay` for the AUR packages (`openshell-bin`, `tmog-bin`).
-- `curl` and `jq` for the Rufust GitHub release check; `vercmp` comes with pacman.
+- `curl` for the one-line installer and the Rufust release check; `jq` for the
+  Rufust release check. `vercmp` comes with pacman.
 - Network access for GitHub releases, the AUR and the Omarchy Control installer.
 
 ## Usage
@@ -45,6 +78,7 @@ always run as the invoking desktop user, never as root.
 |--------|--------|
 | `-n`, `--dry-run` | Print the current state and the commands that would run. No changes are made. |
 | `-y`, `--yes` | Skip the confirmation prompt for unattended runs. |
+| `-v`, `--version` | Print the script version and exit. |
 | `-h`, `--help` | Show help and exit. |
 
 ## What the installer sets up
@@ -133,18 +167,20 @@ To change the set, edit the `REQUESTED` array near the top of
 ├── .gitignore
 ├── LICENSE
 ├── README.md
-├── server-install.sh
-└── server-uninstall-packages.sh
+├── install.sh                     # GitHub one-line bootstrap
+├── server-install.sh              # installs/configures the toolset
+└── server-uninstall-packages.sh   # removes desktop packages
 ```
 
-## Publishing to GitHub
-
-After creating an empty repository on GitHub:
+## Development
 
 ```sh
-git remote add origin git@github.com:<owner>/<repository>.git
-git branch -M main
-git push -u origin main
+git clone git@github.com:hornos/omarchy-post-install-server.git
+cd omarchy-post-install-server
+./install.sh --dir "$HOME/.local/bin"
+
+# Or run a checkout directly
+./server-install.sh --dry-run
 ```
 
 ## License
