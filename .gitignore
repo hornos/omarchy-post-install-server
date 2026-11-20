@@ -1,0 +1,14 @@
+# Editor / OS noise
+.DS_Store
+*.swp
+*.swo
+*~
+
+# pacman backup files that can appear when testing locally
+*.pacsave
+*.pacnew
+*.pacorig
+
+# Logs and temporary downloads
+*.log
+*.tmp
